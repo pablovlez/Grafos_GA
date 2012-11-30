@@ -10,9 +10,10 @@ t = Time.now
 
 fsalida.puts "Tiempo de inicio #{t.strftime("%d/%m/%Y %H:%M:%S")}"
 
-def crear_grafo (num_nodos,cromosoma)
-  n=num_nodos
-  graph = IGraph::Generate.lattice([n,n],false,false,false)
+def crear_grafo (num_nodos)
+  t = Time.now
+  puts "Tiempo de inicio crear_grafo #{t.strftime("%d/%m/%Y %H:%M:%S")}"
+  graph = IGraph::Generate.lattice([num_nodos,num_nodos],false,false,false)
 
   #eliminamos aristas previamente anadidas por Generate.lattice
   #puts "eliminando aristas por defecto"
@@ -25,9 +26,18 @@ def crear_grafo (num_nodos,cromosoma)
     }
   }
   #puts "done"
+t = Time.now
+puts "Tiempo de finalizacion crear_grafo #{t.strftime("%d/%m/%Y %H:%M:%S")}"
 
+  return graph
+end
+
+
+def procesar_aristas(graph,cromosoma)
   #puts "procesando aristas"
-
+  t = Time.now
+  puts "Tiempo de inicio procesar_aristas #{t.strftime("%d/%m/%Y %H:%M:%S")}"
+  n=Math.sqrt(graph.vcount())
   vecinos=[-(n+1),-n,-(n-1),-1,1,(n-1),n,(n+1)] #vecinos de un nodo con ocho vecinos
   #modificado 7 nov, generar el grafo rotando sus cuadrantes
   vecinos_r_1=[5,3,0,6,1,7,4,2]
@@ -83,6 +93,9 @@ def crear_grafo (num_nodos,cromosoma)
   end
 
   #puts "done"
+  t = Time.now
+  #puts t.strftime("%d/%m/%Y %H:%M:%S")
+  puts "Tiempo de finalizacion procesar_aristas #{t.strftime("%d/%m/%Y %H:%M:%S")}"
   return graph
 
 end
@@ -97,6 +110,9 @@ def iniciar_cromosoma
 end
 
 def aptitud(graph, fsalida)
+  t = Time.now
+  #puts t.strftime("%d/%m/%Y %H:%M:%S")
+  puts "Tiempo de inicio aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
   n=Math.sqrt(graph.vcount())
   apt=0
   20.times do |iter|
@@ -124,7 +140,10 @@ def aptitud(graph, fsalida)
     fsalida.puts "calculando nodos p"
 
     nodos_p=[]
-    graph.each{|nodo_p|
+      iter=((n*n)/10)
+      iter=iter.to_int
+      iter.times{|i|
+      nodo_p=rand(n*n)
       ruta_a_p=graph.get_shortest_paths(nodo_a,[nodo_p],IGraph::ALL)
       ruta_b_p=graph.get_shortest_paths(nodo_b,[nodo_p],IGraph::ALL)
 
@@ -218,14 +237,22 @@ def aptitud(graph, fsalida)
     fsalida.puts "****************** \n\n"
   end
   #puts apt
+t = Time.now
+#puts t.strftime("%d/%m/%Y %H:%M:%S")
+puts "Tiempo de finalizacion aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
   return apt
 end
 
+#poblacion inicial
 def crear_poblacion (cantidad_pob, num_nodos,fsalida)
-  poblacion = []
+  poblacion = []  
   cantidad_pob.times{ |i|
+    
     cromosoma=iniciar_cromosoma
-    grafo=crear_grafo(num_nodos,cromosoma)
+    puts "hijo #{i}"
+    grafo_sin_aristas=crear_grafo(num_nodos)
+    puts "numero de aristas #{grafo_sin_aristas.ecount()}"
+    grafo=procesar_aristas(grafo_sin_aristas,cromosoma)
     poblacion[i]=[grafo,cromosoma,aptitud(grafo,fsalida)]
   }
   #puts poblacion.size
@@ -250,7 +277,7 @@ def calcular_aptitud (poblacion)
 end
 
 puts "-------------aptitues----------------"
-pob_ini=crear_poblacion(5,20,fsalida)
+pob_ini=crear_poblacion(100,30,fsalida)
 
 calcular_aptitud(pob_ini).each{|individuo|
 
@@ -261,3 +288,4 @@ t = Time.now
 #puts t.strftime("%d/%m/%Y %H:%M:%S")
 fsalida.puts "Tiempo de finalizacion #{t.strftime("%d/%m/%Y %H:%M:%S")}"
 fsalida.close
+
