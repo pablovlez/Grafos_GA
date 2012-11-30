@@ -138,7 +138,10 @@ def aptitud(graph, fsalida)
 
     #calculamos los nodos p
     fsalida.puts "calculando nodos p"
-
+    
+    
+    #30 nov 2012
+    #cambia la forma en como se hallan los nodos p
     nodos_p=[]
       iter=((n*n)/10)
       iter=iter.to_int
