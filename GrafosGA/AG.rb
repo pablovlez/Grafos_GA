@@ -53,6 +53,29 @@ class AG
   end
   
   def reproduccion
+    i=0
+    while i<25
+      if rand()<0.60
+        grafos_hijos=cruce(@matting_pool[rand(25)],@matting_pool[rand(25)])
+        
+        if rand()<0.05
+          grafos_hijos[0]=mutacion(grafos_hijos[0])
+        end
+        if rand()<0.05
+          grafos_hijos[1]=mutacion(grafos_hijos[1])
+        end
+        
+        @hijos.push(grafos_hijos[0])
+        @hijos.push(grafos_hijos[1])
+        
+      else
+        
+        @hijos.push(@matting_pool[rand(25)])
+        @hijos.push(@matting_pool[rand(25)])
+                   
+      end
+      i+=2
+    end
     
   end
   
