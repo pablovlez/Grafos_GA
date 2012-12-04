@@ -7,9 +7,14 @@ class Grafo
 
   attr_accessor :graph, :cromosoma, :aptitud
   
-  def initialize (num_nodos)
+  def initialize (num_nodos,cromosoma=nil)
 
+    if cromosoma == nil 
     @cromosoma= iniciar_cromosoma
+    else
+      @cromosoma = cromosoma
+    end
+    
     graph = IGraph::Generate.lattice([num_nodos,num_nodos],false,false,false)
 
     #eliminamos aristas previamente anadidas por Generate.lattice
@@ -26,7 +31,10 @@ class Grafo
     fsalida=File.new('salida.txt','w')
     @graph = procesar_aristas(graph,@cromosoma)
     @aptitud = aptitud(@graph, fsalida)
+    
   end
+  
+  
 
   def procesar_aristas(graph,cromosoma)
     #puts "procesando aristas"
