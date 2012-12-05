@@ -30,7 +30,7 @@ class Grafo
     #puts "done"
     fsalida=File.new('salida.txt','w')
     @graph = procesar_aristas(graph,@cromosoma)
-    @aptitud = aptitud(@graph, fsalida)
+    @aptitud = puntuar_aptitud(@graph, fsalida)
     
   end
   
@@ -107,8 +107,12 @@ class Grafo
     #puts cromosoma.inspect
     return cromosoma
   end
+  
+  def mutar_cromosoma(cromosoma)    
+    @cromosoma=cromosoma
+  end
 
-  def aptitud(graph, fsalida)
+  def puntuar_aptitud(graph, fsalida)
     t = Time.now
     #puts t.strftime("%d/%m/%Y %H:%M:%S")
     puts "Tiempo de inicio aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
