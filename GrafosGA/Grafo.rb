@@ -28,7 +28,7 @@ class Grafo
       }
     }
     #puts "done"
-    fsalida=File.new('salida.txt','w')
+    fsalida=File.new('salida_grafo.txt','w')
     @graph = procesar_aristas(graph,@cromosoma)
     @aptitud = puntuar_aptitud(@graph, fsalida)
     
