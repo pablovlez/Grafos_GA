@@ -119,16 +119,16 @@ class Grafo
     n=Math.sqrt(graph.vcount())
     apt=0
     20.times do |iter|
-      fsalida.puts "iteracion #{iter}"
+      #fsalida.puts "iteracion #{iter}"
       #definimos los nodos a y b aleatoriamente
       nodo_a=rand(n*n)
       nodo_b=rand(n*n)
 
-      fsalida.puts "nodo a #{nodo_a}"
-      fsalida.puts "nodo b #{nodo_b}"
+      #fsalida.puts "nodo a #{nodo_a}"
+      #fsalida.puts "nodo b #{nodo_b}"
 
       #calculamos el nodo m entre los nodos a y b
-      fsalida.puts "calculando nodo medio"
+      #fsalida.puts "calculando nodo medio"
       nodo_m=nil
       graph.get_shortest_paths(nodo_a,[nodo_b],IGraph::ALL).each {|a|
         l=a.size/2
@@ -136,11 +136,11 @@ class Grafo
         nodo_m=a[l]
       }
       #fsalida.puts "nodos medios encontrados #{nodos_m.size}"
-      fsalida.puts "nodo medio #{nodo_m}"
-      fsalida.puts "done"
+      #fsalida.puts "nodo medio #{nodo_m}"
+      #fsalida.puts "done"
 
       #calculamos los nodos p
-      fsalida.puts "calculando nodos p"
+      #fsalida.puts "calculando nodos p"
 
       #30 nov 2012
       #cambia la forma en como se hallan los nodos p
@@ -160,10 +160,10 @@ class Grafo
           end
         end
       }
-      fsalida.puts "done"
-      fsalida.puts "nodos p encontrados #{nodos_p.size}"
+      #fsalida.puts "done"
+      #fsalida.puts "nodos p encontrados #{nodos_p.size}"
 
-      fsalida.puts "calculando error de pitagoras"
+      #fsalida.puts "calculando error de pitagoras"
       d_a_m=nil
 
       begin
@@ -208,13 +208,13 @@ class Grafo
           if(!resp)
             error=((d_a_m.first.size - 1)**2 + (d_p_m.first.size - 1)**2) - (d_a_p.first.size - 1)**2
             if error<5 and error>-5
-              fsalida.puts "------------------"
-              fsalida.puts "rutas"
-              fsalida.puts "ruta de a hasta m #{d_a_m.first.inspect}"
-              fsalida.puts "ruta de a hasta p #{d_a_p.first.inspect}"
-              fsalida.puts "ruta de p hasta m #{d_p_m.first.inspect}"
-              fsalida.puts "\n"
-              fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
+              #fsalida.puts "------------------"
+              #fsalida.puts "rutas"
+              #fsalida.puts "ruta de a hasta m #{d_a_m.first.inspect}"
+              #fsalida.puts "ruta de a hasta p #{d_a_p.first.inspect}"
+              #fsalida.puts "ruta de p hasta m #{d_p_m.first.inspect}"
+              #fsalida.puts "\n"
+              #fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
               resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])
               if error ==0
                 apt= apt+ 5
@@ -232,14 +232,14 @@ class Grafo
                 apt= apt+ 1
               end
 
-              fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
+              #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
 
             end
           end
         }
       end
-      fsalida.puts "done \n"
-      fsalida.puts "****************** \n\n"
+      #fsalida.puts "done \n"
+      #fsalida.puts "****************** \n\n"
     end
     #puts apt
     t = Time.now

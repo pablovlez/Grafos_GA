@@ -14,7 +14,7 @@ class AG
     }    
   end
 
-  def calcular_aptitud
+  def calcular_aptitud2
     puts "calculando max aptitud"
     max=0
     @aptitudes=[]
@@ -31,8 +31,18 @@ class AG
     @mejor=@aptitudes.max
     puts "done"
   end
+  
+  def calcular_aptitud
+    
+    @aptitudes=[]
+    @poblacion.each{|grafo|
+      @aptitudes.push(grafo.aptitud)
+    }
+  end
+  
+  
 
-  def seleccion
+  def seleccion2
     puts "proceso de seleccion"
     @matting_pool=[]
     25.times{|i|
@@ -56,6 +66,31 @@ class AG
     }
     puts "done"
   end
+  
+def seleccion
+  puts "proceso de seleccion"
+  @matting_pool=[]
+  25.times{|i|
+    ind1=@poblacion[rand(@cant_pob)]
+    ind2=@poblacion[rand(@cant_pob)]
+    ind3=@poblacion[rand(@cant_pob)]
+    
+    if ind1.aptitud > ind2.aptitud and ind1.aptitud > ind3.aptitud
+      @matting_pool.push(ind1)
+    else
+      if ind2.aptitud > ind1.aptitud and ind2.aptitud > ind3.aptitud
+      @matting_pool.push(ind2)
+      else
+        @matting_pool.push(ind3)
+      end
+    end
+  }
+  puts "done"
+end
+  
+  
+  
+  
 
   def reproduccion
     puts "reproduccion"
