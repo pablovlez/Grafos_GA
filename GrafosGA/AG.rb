@@ -14,23 +14,23 @@ class AG
     }    
   end
 
-  def calcular_aptitud2
-    puts "calculando max aptitud"
-    max=0
-    @aptitudes=[]
-    @poblacion.each{|indi|
-      max= max + indi.aptitud
-    }
-    
-    puts "maxima aptitud #{max}"
-
-    @poblacion.each{|grafo|
-      @aptitudes.push(grafo.aptitud.to_f / max.to_f )
-    }
-    puts @aptitudes.inspect
-    @mejor=@aptitudes.max
-    puts "done"
-  end
+#  def calcular_aptitud2
+#    puts "calculando max aptitud"
+#    max=0
+#    @aptitudes=[]
+#    @poblacion.each{|indi|
+#      max= max + indi.aptitud
+#    }
+#    
+#    puts "maxima aptitud #{max}"
+#
+#    @poblacion.each{|grafo|
+#      @aptitudes.push(grafo.aptitud.to_f / max.to_f )
+#    }
+#    puts @aptitudes.inspect
+#    @mejor=@aptitudes.max
+#    puts "done"
+#  end
   
   def calcular_aptitud
     
@@ -42,48 +42,48 @@ class AG
   
   
 
-  def seleccion2
-    puts "proceso de seleccion"
-    @matting_pool=[]
-    25.times{|i|
-      valor= rand()
-      @aptitudes.each_index{|j|
-        if j==0
-          if valor<@aptitudes[j]
-            @matting_pool.push(@poblacion[j])
-            break
-          end
-
-        else
-          if valor >= @aptitudes[j-1] #and valor < @aptitudes[j]
-            @matting_pool.push(@poblacion[j])
-            break
-          end
-
-        end
-      }
-
-    }
-    puts "done"
-  end
+#  def seleccion2
+#    puts "proceso de seleccion"
+#    @matting_pool=[]
+#    25.times{|i|
+#      valor= rand()
+#      @aptitudes.each_index{|j|
+#        if j==0
+#          if valor<@aptitudes[j]
+#            @matting_pool.push(@poblacion[j])
+#            break
+#          end
+#
+#        else
+#          if valor >= @aptitudes[j-1] #and valor < @aptitudes[j]
+#            @matting_pool.push(@poblacion[j])
+#            break
+#          end
+#
+#        end
+#      }
+#
+#    }
+#    puts "done"
+#  end
   
 def seleccion
   puts "proceso de seleccion"
   @matting_pool=[]
-  25.times{|i|
+  26.times{|i|
     ind1=@poblacion[rand(@cant_pob)]
     ind2=@poblacion[rand(@cant_pob)]
     ind3=@poblacion[rand(@cant_pob)]
     
-    if ind1.aptitud > ind2.aptitud and ind1.aptitud > ind3.aptitud
+    if ind1.aptitud < ind2.aptitud and ind1.aptitud < ind3.aptitud
       @matting_pool.push(ind1)
     else
-      if ind2.aptitud > ind1.aptitud and ind2.aptitud > ind3.aptitud
+      if ind2.aptitud < ind1.aptitud and ind2.aptitud < ind3.aptitud
       @matting_pool.push(ind2)
       else
         @matting_pool.push(ind3)
       end
-    end
+    end    
   }
   puts "done"
 end
@@ -98,15 +98,17 @@ end
     i=0
     while i<25
       if rand()<0.60
-        grafos_hijos=cruce(@matting_pool[rand(25)],@matting_pool[rand(25)])
-
+        
+        #grafos_hijos=cruce(@matting_pool[rand(25)],@matting_pool[rand(25)])
+        #cambio 
+        grafos_hijos=cruce(@matting_pool[i],@matting_pool[i+1])
         @hijos.push(grafos_hijos[0])
         @hijos.push(grafos_hijos[1])
 
       else
 
-        @hijos.push(@matting_pool[rand(25)])
-        @hijos.push(@matting_pool[rand(25)])
+        @hijos.push(@matting_pool[i])
+        @hijos.push(@matting_pool[i+1])
 
       end
       i+=2
@@ -129,7 +131,10 @@ end
       cromo_2=mutacion(cromo_2)
     end
 
-    return [Grafo.new(@num_nodos,cromo_1),Grafo.new(@num_nodos,cromo_2)]
+    hijo1=Grafo.new(@num_nodos,cromo_1)
+    hijo2=Grafo.new(@num_nodos,cromo_2)
+    puts "apitud hijo1 #{hijo1.aptitud} , aptitud hijo2 #{hijo2.aptitud}"
+    return [hijo1,hijo2]
 
     puts "done"
   end

@@ -6,10 +6,10 @@ require 'AG.rb'
 
 class Main
   
-  ag=AG.new(100,32)
+  ag=AG.new(100,30)
   fsalida=File.new('salida_evolucion.txt','w')
   i=0
-  20.times{
+  5.times{
     
   ag.evolucion()
   fsalida.puts "Generacion #{i}"

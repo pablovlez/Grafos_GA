@@ -216,21 +216,7 @@ class Grafo
               #fsalida.puts "\n"
               #fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
               resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])
-              if error ==0
-                apt= apt+ 5
-              end
-              if error==1 or error==-1
-                apt=apt + 4
-              end
-              if error ==2 or error==-2
-                apt= apt+ 3
-              end
-              if error==3 or error==-3
-                apt=apt + 2
-              end
-              if error ==4 or error==-4
-                apt= apt+ 1
-              end
+              apt = apt + error.abs
 
               #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
 
