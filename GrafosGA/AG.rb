@@ -70,18 +70,30 @@ class AG
 def seleccion
   puts "proceso de seleccion"
   @matting_pool=[]
-  26.times{|i|
-    ind1=@poblacion[rand(@cant_pob)]
-    ind2=@poblacion[rand(@cant_pob)]
-    ind3=@poblacion[rand(@cant_pob)]
+  factibles=[]  
     
-    if ind1.aptitud < ind2.aptitud and ind1.aptitud < ind3.aptitud
+  @poblacion.each{|grafo|
+    if grafo.aptitud !=0
+      factibles.push(grafo)
+    end
+  }  
+    
+    
+  26.times{|i|
+    ind1=factibles[rand(@cant_pob)]
+    ind2=factibles[rand(@cant_pob)]
+    ind3=factibles[rand(@cant_pob)]      
+    
+    
+    if ind1.aptitud > ind2.aptitud and ind1.aptitud > ind3.aptitud
       @matting_pool.push(ind1)
     else
-      if ind2.aptitud < ind1.aptitud and ind2.aptitud < ind3.aptitud
+      if ind2.aptitud > ind1.aptitud and ind2.aptitud > ind3.aptitud
       @matting_pool.push(ind2)
       else
+        #if ind3.aptitud > ind1.aptitud and ind3.aptitud > ind2.aptitud
         @matting_pool.push(ind3)
+        #end
       end
     end    
   }
@@ -163,13 +175,11 @@ end
     index_hijos=0
     @poblacion.each_index{|index|
       if index_hijos < 25
-        if @poblacion[index].aptitud == 0 or @poblacion[index].aptitud < @hijos[index_hijos].aptitud
+        if @poblacion[index].aptitud < 5 or @poblacion[index].aptitud < @hijos[index_hijos].aptitud
           @poblacion[index]=@hijos[index_hijos]
           index_hijos+=1
           puts "reemplazo.. #{@poblacion[index].aptitud} por ... #{@hijos[index_hijos].aptitud}"
-        end
-      else
-        break
+        end      
       end
     }
 

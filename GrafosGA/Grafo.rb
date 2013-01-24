@@ -5,16 +5,15 @@ require 'igraph'
 
 class Grafo
 
-  attr_accessor :graph, :cromosoma, :aptitud
-  
+  attr_accessor :graph, :cromosoma, :aptitud, :datos
   def initialize (num_nodos,cromosoma=nil)
 
-    if cromosoma == nil 
-    @cromosoma= iniciar_cromosoma
+    if cromosoma == nil
+      @cromosoma= iniciar_cromosoma
     else
       @cromosoma = cromosoma
     end
-    
+
     graph = IGraph::Generate.lattice([num_nodos,num_nodos],false,false,false)
 
     #eliminamos aristas previamente anadidas por Generate.lattice
@@ -31,10 +30,8 @@ class Grafo
     fsalida=File.new('salida_grafo.txt','w')
     @graph = procesar_aristas(graph,@cromosoma)
     @aptitud = puntuar_aptitud(@graph, fsalida)
-    
+
   end
-  
-  
 
   def procesar_aristas(graph,cromosoma)
     #puts "procesando aristas"
@@ -107,8 +104,8 @@ class Grafo
     #puts cromosoma.inspect
     return cromosoma
   end
-  
-  def mutar_cromosoma(cromosoma)    
+
+  def mutar_cromosoma(cromosoma)
     @cromosoma=cromosoma
   end
 
@@ -118,9 +115,11 @@ class Grafo
     puts "Tiempo de inicio aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
     n=Math.sqrt(graph.vcount())
     apt=0
+    resul=[]
     20.times do |iter|
       #fsalida.puts "iteracion #{iter}"
       #definimos los nodos a y b aleatoriamente
+
       nodo_a=rand(n*n)
       nodo_b=rand(n*n)
 
@@ -174,8 +173,6 @@ class Grafo
 
       end
 
-      resul=[]
-
       if d_a_m!=nil
         nodos_p.each{|nodo_p|
 
@@ -216,13 +213,28 @@ class Grafo
               #fsalida.puts "\n"
               #fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
               resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])
-              apt = apt + error.abs
+              if error ==0
+                apt= apt+ 5
+              end
+              if error==1 or error==-1
+                apt=apt + 4
+              end
+              if error ==2 or error==-2
+                apt= apt+ 3
+              end
+              if error==3 or error==-3
+                apt=apt + 2
+              end
+              if error ==4 or error==-4
+                apt= apt+ 1
+              end
 
               #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
 
             end
           end
         }
+
       end
       #fsalida.puts "done \n"
       #fsalida.puts "****************** \n\n"
@@ -232,6 +244,7 @@ class Grafo
     #puts t.strftime("%d/%m/%Y %H:%M:%S")
     puts "Tiempo de finalizacion aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
     fsalida.close
+    @datos=resul
     return apt
   end
 
