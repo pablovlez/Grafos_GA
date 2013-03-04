@@ -3,7 +3,7 @@
 require 'rubygems'
 require 'igraph'
 
-class Grafo
+class GraphEvo
 
   attr_accessor :graph, :cromosoma, :aptitud, :datos
   def initialize (num_nodos,cromosoma=nil)
@@ -112,11 +112,11 @@ class Grafo
   def puntuar_aptitud(graph, fsalida)
     t = Time.now
     #puts t.strftime("%d/%m/%Y %H:%M:%S")
-    puts "Tiempo de inicio aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
+    #puts "Tiempo de inicio aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
     n=Math.sqrt(graph.vcount())
-    apt=0
+    apt=[]
     resul=[]
-    20.times do |iter|
+    15.times do |iter|
       #fsalida.puts "iteracion #{iter}"
       #definimos los nodos a y b aleatoriamente
 
@@ -212,23 +212,12 @@ class Grafo
               #fsalida.puts "ruta de p hasta m #{d_p_m.first.inspect}"
               #fsalida.puts "\n"
               #fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
-              resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])
-              if error ==0
-                apt= apt+ 5
+              resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])              
+              if error ==1 or error==-1
+                apt.push(1)
+              else
+                apt.push(error)  
               end
-              if error==1 or error==-1
-                apt=apt + 4
-              end
-              if error ==2 or error==-2
-                apt= apt+ 3
-              end
-              if error==3 or error==-3
-                apt=apt + 2
-              end
-              if error ==4 or error==-4
-                apt= apt+ 1
-              end
-
               #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
 
             end
@@ -240,11 +229,14 @@ class Grafo
       #fsalida.puts "****************** \n\n"
     end
     #puts apt
-    t = Time.now
+    #t = Time.now
     #puts t.strftime("%d/%m/%Y %H:%M:%S")
-    puts "Tiempo de finalizacion aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
+   # puts "Tiempo de finalizacion aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
     fsalida.close
     @datos=resul
+    if apt.count == 0
+      apt.push(100)
+    end
     return apt
   end
 
