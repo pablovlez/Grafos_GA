@@ -5,7 +5,7 @@ require 'igraph'
 
 class GraphEvo
 
-  attr_accessor :graph, :cromosoma, :aptitud, :datos
+  attr_accessor :graph, :cromosoma, :aptitud, :datos, :puntuacion
   def initialize (num_nodos,cromosoma=nil)
 
     if cromosoma == nil
@@ -30,6 +30,7 @@ class GraphEvo
     fsalida=File.new('salida_grafo.txt','w')
     @graph = procesar_aristas(graph,@cromosoma)
     @aptitud = puntuar_aptitud(@graph, fsalida)
+    @puntuacion=1000
 
   end
 
@@ -204,7 +205,7 @@ class GraphEvo
           }
           if(!resp)
             error=((d_a_m.first.size - 1)**2 + (d_p_m.first.size - 1)**2) - (d_a_p.first.size - 1)**2
-            if error<5 and error>-5
+            
               #fsalida.puts "------------------"
               #fsalida.puts "rutas"
               #fsalida.puts "ruta de a hasta m #{d_a_m.first.inspect}"
@@ -213,15 +214,15 @@ class GraphEvo
               #fsalida.puts "\n"
               #fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
               resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])              
-              if error ==1 or error==-1
-                apt.push(1)
+              if error<0
+                apt.push(error * -1)
               else
                 apt.push(error)  
               end
               #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
 
             end
-          end
+          
         }
 
       end
@@ -235,7 +236,7 @@ class GraphEvo
     fsalida.close
     @datos=resul
     if apt.count == 0
-      apt.push(100)
+      apt.push(1000)
     end
     return apt
   end
