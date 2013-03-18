@@ -24,149 +24,27 @@ class AG
     end
 
   end
-
-  #  def calcular_aptitud2
-  #    puts "calculando max aptitud"
-  #    max=0
-  #    @aptitudes=[]
-  #    @poblacion.each{|indi|
-  #      max= max + indi.aptitud
-  #    }
-  #
-  #    puts "maxima aptitud #{max}"
-  #
-  #    @poblacion.each{|grafo|
-  #      @aptitudes.push(grafo.aptitud.to_f / max.to_f )
-  #    }
-  #    puts @aptitudes.inspect
-  #    @mejor=@aptitudes.max
-  #    puts "done"
-  #  end
-
-  def calcular_aptitud
-    #entre mas ceros haya mejor es el individuo
+  
+  def set_aptitudes
     @aptitudes=[]
-
     @poblacion.each{|graph|
-
-      n=6
-      histogram=[]
-      n.times{|i|
-        if i==0 then
-          histogram[i]=[0..1,0]
-        else
-          if i==(n-1) then
-            histogram[i]=[2**i..1024,0]
-          else
-            histogram[i]=[2**i..(2**(i+1))-1,0]
-          end
-        end
-      }
-
-      puts histogram.inspect
-
-      graph.aptitud.each{|value|
-        histogram.each{|histo|
-          key=histo[0]
-          count=histo[1]
-          if key.include?(value)
-            histo[1]+=1
-          end
-        }
-      }
-      puts histogram.inspect
-      i=0
-      apt=0
-      histogram.each{|histog|
-        value=histog[1]
-        apt+=value* 2**i
-        i+=1
-      }
-      puts "aptitud grafo #{apt}"
-      graph.puntuacion=apt
-      @aptitudes.push(histogram[0],histogram[1])
-
+      @aptitudes.push(graph.aptitud)
     }
-  end
-
-  #  def seleccion2
-  #    puts "proceso de seleccion"
-  #    @matting_pool=[]
-  #    25.times{|i|
-  #      valor= rand()
-  #      @aptitudes.each_index{|j|
-  #        if j==0
-  #          if valor<@aptitudes[j]
-  #            @matting_pool.push(@poblacion[j])
-  #            break
-  #          end
-  #
-  #        else
-  #          if valor >= @aptitudes[j-1] #and valor < @aptitudes[j]
-  #            @matting_pool.push(@poblacion[j])
-  #            break
-  #          end
-  #
-  #        end
-  #      }
-  #
-  #    }
-  #    puts "done"
-  #  end
-
-  #3 individuos aleatorios y selecciono el de mayor aptitud
+      
+  end 
 
   def seleccion
     puts "proceso de seleccion"
     @matting_pool=[]
-    factibles=[]
-
-    ##  @poblacion.each{|grafo|
-    ##    if grafo.aptitud !=0
-    ##      factibles.push(grafo)
-    ##    end
-    ##  }
-    #
-    #  @mejor=@poblacion.max{|a,b|
-    #    a.aptitud <=> b.aptitud
-    #  }
-    #  @matting_pool.push(@mejor)
-    #  25.times{|i|
-    #    ind1=@poblacion[rand(@cant_pob)]
-    #    ind2=@poblacion[rand(@cant_pob)]
-    #
-    #    if ind1.aptitud > ind2.aptitud
-    #      @matting_pool.push(ind1)
-    #    else
-    #      @matting_pool.push(ind2)
-    #    end
-    #  }
-    #
-    #  @mejor=@poblacion.max{|a,b|
-    #      a.aptitud <=> b.aptitud
-    #    }
-
-    #  @aptitudes.each_index{|i|
-    #    if @aptitudes[i]>0
-    #      @matting_pool.push(@poblacion[i])
-    #    end
-    #  }
-    #
-    #
-    n=26-@matting_pool.count
-    if @matting_pool.count <= 26
-      n.times{
-        al1=rand(@cant_pob)
-        al2=rand(@cant_pob)
-
-        if @poblacion[al1].puntuacion < @poblacion[al2].puntuacion
-          @matting_pool.push(@poblacion[al1])
-        else
-          @matting_pool.push(@poblacion[al2])
-        end
-      }
-    end
-
+    26.times{
+      al1=rand(@cant_pob)
+      al2=rand(@cant_pob)
+      if @poblacion[al1].aptitud < @poblacion[al2].aptitud
+        @matting_pool.push(@poblacion[al1])
+      else
+        @matting_pool.push(@poblacion[al2])
+      end
+    }
     puts "done"
   end
 
@@ -243,67 +121,30 @@ class AG
 
   end
 
-  #drop_while
   def reemplazo
-    puts "reemplazo"
-
-    #    index_hijos=0
-    #    @poblacion.each_index{|index|
-    #      if index_hijos < 25
-    #        if @poblacion[index].aptitud < @hijos[index_hijos].aptitud
-    #          @poblacion[index]=@hijos[index_hijos]
-    #          index_hijos+=1
-    #          puts "reemplazo.. #{@poblacion[index].aptitud} por ... #{@hijos[index_hijos].aptitud}"
-    #        end
-    #      end
-    #    }
-
-    index_hijos=0
-    25.times{|i|
-      ind=rand(@cant_pob)
-      puts "reemplazo.. #{@poblacion[ind].aptitud} por ... #{@hijos[i].aptitud}"
-      @poblacion[ind]=@hijos[i]
-
+    puts "reemplazo"    
+    @hijos.each{|hijo|
+      i=0
+      @poblacion.each{|graph|
       
+        if hijo.aptitud<graph.aptitud
+          @poblacion[i]=hijo
+          puts "reemplazo #{graph.aptitud} por #{hijo.aptitud}"
+          break
+        end
+        i+=1
+      }
     }
-
-    #    apt_hijos=[]
-    #        @hijos.each{|hijo|
-    #          per_zeros=hijo.aptitud.count(0).to_f/hijo.aptitud.count
-    #                per_ones=hijo.aptitud.count(1).to_f/hijo.aptitud.count
-    #
-    ##                if per_ones>0.35 and per_ones < 0.65 and per_ones>per_zeros
-    ##                  apt_hijos.push(per_ones)
-    ##                else
-    ##                  apt_hijos.push(per_zeros)
-    ##                end
-    #          apt_hijos.push(per_zeros)
-    #        }
-    #    puts apt_hijos.inspect
-    #    puts @aptitudes.inspect
-    #
-    #    @aptitudes.each_index{|index|
-    #          if index_hijos < 25
-    #            if @aptitudes[index] == 0 or @aptitudes[index] < apt_hijos[index_hijos]
-    #              @poblacion[index]=@hijos[index_hijos]
-    #              @aptitudes[index]=apt_hijos[index_hijos]
-    #              index_hijos+=1
-    #              puts "reemplazo.. #{@aptitudes[index]} por ... #{apt_hijos[index_hijos]}"
-    #            end
-    #          end
-    #        }
-
-    puts @aptitudes.inspect
     puts "done"
   end
 
   def evolucion
     #puts "aptitudes antes de evolucionar #{@aptitudes.inspect}"
-    calcular_aptitud()
+    
     seleccion()
     reproduccion()
     reemplazo()
-
+    set_aptitudes()
   end
 
 end

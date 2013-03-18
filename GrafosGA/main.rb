@@ -6,7 +6,7 @@ require 'AG.rb'
 
 class Main
   
-  ag=AG.new(100,60,0)
+  ag=AG.new(100,26,0)
   
   fsalida=File.new('salida_evolucion.txt','w')
   i=0

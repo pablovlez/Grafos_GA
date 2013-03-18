@@ -5,7 +5,7 @@ require 'igraph'
 
 class GraphEvo
 
-  attr_accessor :graph, :cromosoma, :aptitud, :datos, :puntuacion
+  attr_accessor :graph, :cromosoma, :aptitud, :datos, :errores
   def initialize (num_nodos,cromosoma=nil)
 
     if cromosoma == nil
@@ -29,10 +29,52 @@ class GraphEvo
     #puts "done"
     fsalida=File.new('salida_grafo.txt','w')
     @graph = procesar_aristas(graph,@cromosoma)
-    @aptitud = puntuar_aptitud(@graph, fsalida)
-    @puntuacion=1000
+    @errores = puntuar_aptitud(@graph, fsalida)
+    @aptitud=calcular_aptitud(@errores)
 
   end
+  
+def calcular_aptitud(errores)
+  #entre mas ceros haya mejor es el individuo
+      n=6
+      histogram=[]
+      n.times{|i|
+        if i==0 then
+          histogram[i]=[0..1,0]
+        else
+          if i==(n-1) then
+            histogram[i]=[2**i..1024,0]
+          else
+            histogram[i]=[2**i..(2**(i+1))-1,0]
+          end
+        end
+      }
+
+      puts histogram.inspect
+
+      errores.each{|value|
+        histogram.each{|histo|
+          key=histo[0]
+          count=histo[1]
+          if key.include?(value)
+            histo[1]+=1
+          end
+        }
+      }
+      puts histogram.inspect
+      i=0
+      apt=0
+      histogram.each{|histog|
+        value=histog[1]
+        apt+=value* 2**i
+        i+=1
+      }
+      puts "aptitud grafo #{apt}"
+      return apt     
+    
+  end
+
+  
 
   def procesar_aristas(graph,cromosoma)
     #puts "procesando aristas"
