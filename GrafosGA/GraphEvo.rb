@@ -5,14 +5,18 @@ require 'igraph'
 
 class GraphEvo
 
-  attr_accessor :graph, :cromosoma, :aptitud, :datos, :errores
-  def initialize (num_nodos,cromosoma=nil)
+  attr_accessor :graph, :cromosoma, :aptitud, :datos, :errores, :cantidad_nodos, :vecindad, :histograma
+  def initialize (num_nodos,vecindad,cromosoma=nil)
+
+    @vecindad=vecindad
 
     if cromosoma == nil
       @cromosoma= iniciar_cromosoma
     else
       @cromosoma = cromosoma
     end
+
+    @cantidad_nodos=num_nodos
 
     graph = IGraph::Generate.lattice([num_nodos,num_nodos],false,false,false)
 
@@ -33,94 +37,121 @@ class GraphEvo
     @aptitud=calcular_aptitud(@errores)
 
   end
-  
-def calcular_aptitud(errores)
-  #entre mas ceros haya mejor es el individuo
-      n=6
-      histogram=[]
-      n.times{|i|
-        if i==0 then
-          histogram[i]=[0..1,0]
+
+  def calcular_aptitud(errores)
+    #entre mas ceros haya mejor es el individuo
+    n=6
+    histogram=[]
+    #calculamos los rangos del histograma
+    n.times{|i|
+      if i==0 then
+        histogram[i]=[0..1,0]
+      else
+        if i==(n-1) then
+          histogram[i]=[2**i..1024,0]
         else
-          if i==(n-1) then
-            histogram[i]=[2**i..1024,0]
-          else
-            histogram[i]=[2**i..(2**(i+1))-1,0]
-          end
+          histogram[i]=[2**i..(2**(i+1))-1,0]
+        end
+      end
+    }
+
+    puts histogram.inspect
+    #miramos si el error de pitagoras se encuentra en un rango
+    errores.each{|value|
+      histogram.each{|histo|
+        key=histo[0]
+        count=histo[1]
+        if key.include?(value)
+          histo[1]+=1
         end
       }
+    }
+    puts histogram.inspect
+    @histograma=histogram
+    i=0
+    apt=0
+    #calculamos la aptitud del individuo
+    histogram.each{|histog|
+      value=histog[1]
+      apt+=value* 2**i
+      i+=1
+    }
+    puts "aptitud grafo #{apt}"
+    return apt
 
-      puts histogram.inspect
-
-      errores.each{|value|
-        histogram.each{|histo|
-          key=histo[0]
-          count=histo[1]
-          if key.include?(value)
-            histo[1]+=1
-          end
-        }
-      }
-      puts histogram.inspect
-      i=0
-      apt=0
-      histogram.each{|histog|
-        value=histog[1]
-        apt+=value* 2**i
-        i+=1
-      }
-      puts "aptitud grafo #{apt}"
-      return apt     
-    
   end
-
-  
 
   def procesar_aristas(graph,cromosoma)
     #puts "procesando aristas"
 
     n=Math.sqrt(graph.vcount())
-    vecinos=[-(n+1),-n,-(n-1),-1,1,(n-1),n,(n+1)] #vecinos de un nodo con ocho vecinos
-    #modificado 7 nov, generar el grafo rotando sus cuadrantes
-    vecinos_r_1=[5,3,0,6,1,7,4,2]
-    vecinos_r_2=[7,6,5,4,3,2,1,0]
-    vecinos_r_3=[2,4,7,1,6,0,3,5]
+
+    vecinos=[]
+    index_rot1=[]
+    index_rot2=[]
+    index_rot3=[]
+    if @vecindad == 1 #Parametros para definir los vecinos de un nodo i, 8 vecinos
+      vecinos=[-(n+1),-n,-(n-1),-1,1,(n-1),n,(n+1)]
+      index_rot1=[5,3,0,6,1,7,4,2]
+      index_rot2=[7,6,5,4,3,2,1,0]
+      index_rot3=[2,4,7,1,6,0,3,5]
+    else
+      if @vecindad == 2 # 23 vecinos
+        vecinos=[-(n*2+2),-(n*2+1),-(n*2),-(n*2-1),-(n*2-2),
+          -(n+2),-(n+1),-n,-(n-1),-(n-2),
+          -2,-1,1,2,
+          (n-2),(n-1),n,(n+1),(n+2),
+          (n*2-2),(n*2-1),(n*2),(n*2+1),(n*2+2)]
+        index_rot1=[19,14,10,5,0,20,15,11,6,1,21,16,7,2,22,17,12,8,3,23,18,13,9,4]
+        index_rot2=[23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0]
+        index_rot3=[4,9,13,18,23,2,8,12,17,22,2,7,16,21,1,6,11,15,20,0,5,10,14,19]
+      end
+    end
 
     vertice = n+1
     while vertice<((n*n)-(n+1))
-
+      #definir las aristas para los nodos del primer cuadrante
       if vertice % n < (n-(n/2)) and vertice <= ((n*n)-1)/2 #primer cuadrante
         cromosoma.each_index{ |i|
           if cromosoma[i]==1
-            graph.add_edge(vertice,vertice+vecinos[i])
-            #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+            #puts vertice+vecinos[i]
+            if vertice+vecinos[i]>0
+              graph.add_edge(vertice,vertice+vecinos[i])
+              #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+            end
           end
         }
       end
-
+#definir las aristas para los nodos del segundo cuadrante
       if vertice % n >= (n-(n/2)) and vertice <= (((n*n)-1)/2) + ((n/2)-1)  #segundo cuadrante
         cromosoma.each_index{ |i|
-          if cromosoma[vecinos_r_1[i]]==1
-            graph.add_edge(vertice,vertice+vecinos[i])
-            #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+          if cromosoma[index_rot1[i]]==1
+            if vertice+vecinos[i]>0
+              graph.add_edge(vertice,vertice+vecinos[i])
+              #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+            end
           end
         }
       end
-
+#definir las aristas para los nodos del tercer cuadrante
       if vertice % n >= (n-(n/2)) and  vertice >= (((n*n)-1)/2)+n and vertice <= ((n*n)-1) - (n+1)  #tercer cuadrante
         cromosoma.each_index{ |i|
-          if cromosoma[vecinos_r_2[i]]==1
-            graph.add_edge(vertice,vertice+vecinos[i])
-            #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+          if cromosoma[index_rot2[i]]==1
+            if vertice+vecinos[i]<n*n
+              graph.add_edge(vertice,vertice+vecinos[i])
+              #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+            end
           end
         }
       end
-
+#definir las aristas para los nodos del cuarto cuadrante
       if vertice >= (((n*n)-1)/2) + ((n/2)-1) + 3 and vertice % n <= (n-(n/2)-1)  #cuarto cuadrante
         cromosoma.each_index{ |i|
-          if cromosoma[vecinos_r_3[i]]==1
-            graph.add_edge(vertice,vertice+vecinos[i])
-            #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+          if cromosoma[index_rot3[i]]==1
+            if vertice+vecinos[i]<n*n
+              graph.add_edge(vertice,vertice+vecinos[i])
+              #puts "Arista anadida del vertice #{vertice} al vertice #{vertice+vecinos[i]}"
+            end
           end
         }
       end
@@ -141,7 +172,13 @@ def calcular_aptitud(errores)
 
   def iniciar_cromosoma
     cromosoma=[]
-    8.times{
+    veces=0
+    if @vecindad==1
+      veces=8
+    else
+      veces=24
+    end
+    veces.times{
       cromosoma.push(rand(2))
     }
     #puts cromosoma.inspect
@@ -156,15 +193,17 @@ def calcular_aptitud(errores)
     t = Time.now
     #puts t.strftime("%d/%m/%Y %H:%M:%S")
     #puts "Tiempo de inicio aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
-    n=Math.sqrt(graph.vcount())
+    numero_nodos=Math.sqrt(graph.vcount())
     apt=[]
     resul=[]
+      #Exploramos 15 veces el grafo buscando los nodos a y b de forma aleatoria
     15.times do |iter|
       #fsalida.puts "iteracion #{iter}"
+      
       #definimos los nodos a y b aleatoriamente
 
-      nodo_a=rand(n*n)
-      nodo_b=rand(n*n)
+      nodo_a=rand(numero_nodos*numero_nodos)
+      nodo_b=rand(numero_nodos*numero_nodos)
 
       #fsalida.puts "nodo a #{nodo_a}"
       #fsalida.puts "nodo b #{nodo_b}"
@@ -187,7 +226,7 @@ def calcular_aptitud(errores)
       #30 nov 2012
       #cambia la forma en como se hallan los nodos p
       nodos_p=[]
-      iter=((n*n)/10)
+      iter=((numero_nodos*numero_nodos)/10)
       iter=iter.to_int
       iter.times{|i|
         nodo_p=rand(n*n)
@@ -206,75 +245,78 @@ def calcular_aptitud(errores)
       #fsalida.puts "nodos p encontrados #{nodos_p.size}"
 
       #fsalida.puts "calculando error de pitagoras"
-      d_a_m=nil
+      distance_nodA_nodM=nil
 
       begin
-        d_a_m=graph.get_shortest_paths(nodo_a,[nodo_m],IGraph::ALL)
+        distance_nodA_nodM=graph.get_shortest_paths(nodo_a,[nodo_m],IGraph::ALL)
       rescue Exception => msg
         # dispone el mensaje de error
-        #puts "d_a_m #{msg}"
+        #puts "distance_nodA_nodM #{msg}"
 
       end
-
-      if d_a_m!=nil
+      
+      #Si encuentra una ruta valida desde el nodo A hasta el nodo M continua
+      if distance_nodA_nodM!=nil
+        #para cada nodo P encontrado calculamos las rutas desde nodo A a nodo P, y desde nodo P a nodo M
         nodos_p.each{|nodo_p|
 
-          d_a_p=nil
-          d_p_m=nil
+          distance_nodA_nodP=nil
+          distance_nodP_nodM=nil
           begin
 
-            d_a_p=graph.get_shortest_paths(nodo_a,[nodo_p],IGraph::ALL)
-            d_p_m=graph.get_shortest_paths(nodo_p,[nodo_m],IGraph::ALL)
+            distance_nodA_nodP=graph.get_shortest_paths(nodo_a,[nodo_p],IGraph::ALL)
+            distance_nodP_nodM=graph.get_shortest_paths(nodo_p,[nodo_m],IGraph::ALL)
           rescue Exception => msg
             # dispone el mensaje de error
             #puts msg
 
           end
-
-          if d_a_p==nil or d_p_m==nil or d_a_p.first.size==0 or d_p_m.first.size==0
+          #si no hay rutas validas o rutas con distancia igual a cero, se sale del ciclo
+          if distance_nodA_nodP==nil or distance_nodP_nodM==nil or distance_nodA_nodP.first.size==0 or distance_nodP_nodM.first.size==0
             break
           end
 
           #añandido el 5 nov, para eliminar rutas iguales
           resp=false
-          d_a_m.first.each_index{|i|
+          distance_nodA_nodM.first.each_index{|i|
             if i>0
-              if d_a_p.first.include?(d_a_m.first[i])
+              if distance_nodA_nodP.first.include?(distance_nodA_nodM.first[i])
                 resp=true
                 break
               end
             end
           }
           if(!resp)
-            error=((d_a_m.first.size - 1)**2 + (d_p_m.first.size - 1)**2) - (d_a_p.first.size - 1)**2
-            
-              #fsalida.puts "------------------"
-              #fsalida.puts "rutas"
-              #fsalida.puts "ruta de a hasta m #{d_a_m.first.inspect}"
-              #fsalida.puts "ruta de a hasta p #{d_a_p.first.inspect}"
-              #fsalida.puts "ruta de p hasta m #{d_p_m.first.inspect}"
-              #fsalida.puts "\n"
-              #fsalida.puts "distancias d(a,m) = #{d_a_m.first.size - 1} d(a,p)= #{d_a_p.first.size - 1} d(p,m)= #{d_p_m.first.size - 1}"
-              resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])              
-              if error<0
-                apt.push(error * -1)
-              else
-                apt.push(error)  
-              end
-              #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
+            #calculamos el error de pitagoras
+            error=((distance_nodA_nodM.first.size - 1)**2 + (distance_nodP_nodM.first.size - 1)**2) - (distance_nodA_nodP.first.size - 1)**2
 
+            #fsalida.puts "------------------"
+            #fsalida.puts "rutas"
+            #fsalida.puts "ruta de a hasta m #{distance_nodA_nodM.first.inspect}"
+            #fsalida.puts "ruta de a hasta p #{distance_nodA_nodP.first.inspect}"
+            #fsalida.puts "ruta de p hasta m #{distance_nodP_nodM.first.inspect}"
+            #fsalida.puts "\n"
+            #fsalida.puts "distancias d(a,m) = #{distance_nodA_nodM.first.size - 1} d(a,p)= #{distance_nodA_nodP.first.size - 1} d(p,m)= #{distance_nodP_nodM.first.size - 1}"
+            
+            #almacenamos los parametros necesarios para volver a reproducir el resultado.
+            resul.push([error,nodo_a,nodo_b,nodo_p,nodo_m])
+            if error<0
+              apt.push(error * -1)
+            else
+              apt.push(error)
             end
-          
+            #fsalida.puts "error pitagoras #{error} nodo m #{nodo_m} nodo p #{nodo_p}"
+
+          end
+
         }
 
       end
-      #fsalida.puts "done \n"
-      #fsalida.puts "****************** \n\n"
     end
     #puts apt
     #t = Time.now
     #puts t.strftime("%d/%m/%Y %H:%M:%S")
-   # puts "Tiempo de finalizacion aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
+    # puts "Tiempo de finalizacion aptitud #{t.strftime("%d/%m/%Y %H:%M:%S")}"
     fsalida.close
     @datos=resul
     if apt.count == 0

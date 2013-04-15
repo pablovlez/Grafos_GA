@@ -5,38 +5,48 @@ require 'GraphRand.rb'
 
 class AG
 
-  attr_accessor :cant_pob, :matting_pool, :poblacion, :hijos, :aptitudes, :num_nodos, :mejor,:clase
-  def initialize(cant_pob,num_nodos,clase)
+  attr_accessor :cant_pob, :matting_pool, :poblacion, :hijos, :aptitudes, :num_nodos, :mejor,:clase,:vecindad,:k
+  def initialize(cant_pob,num_nodos,clase_grafo,vecindad)
 
-    @clase=clase
+    #inicializamos las variables de la clase AG
+    @cant_pob=cant_pob
     @poblacion=[]
 
     @num_nodos=num_nodos
+
+    @clase=clase_grafo
+    @vecindad=vecindad
+
+    #cantidad de privilegiados
+    @k=(@cant_pob/4) + 1
+    #creamos la poblacion de acuerdo a su tipo, 0 si son deterministicos, 1 si son aleatorios
     if @clase==0 then
       cant_pob.times{ |i|
-        @poblacion.push(GraphEvo.new(@num_nodos))
+        @poblacion.push(GraphEvo.new(@num_nodos,vecindad))
         puts i
       }
     else
       cant_pob.times{ |i|
-        @poblacion.push(GraphRand.new(@num_nodos))
+        @poblacion.push(GraphRand.new(@num_nodos,vecindad))
+        puts i
       }
     end
 
   end
-  
+
   def set_aptitudes
     @aptitudes=[]
     @poblacion.each{|graph|
       @aptitudes.push(graph.aptitud)
     }
-      
-  end 
+
+  end
 
   def seleccion
     puts "proceso de seleccion"
     @matting_pool=[]
-    26.times{
+    @k.times{
+      #escogemos dos individuos aleatoriamente y gana el de mayor aptitud
       al1=rand(@cant_pob)
       al2=rand(@cant_pob)
       if @poblacion[al1].aptitud < @poblacion[al2].aptitud
@@ -52,8 +62,10 @@ class AG
     puts "reproduccion"
     @hijos=[]
     i=0
-    while i<25
-      if rand()<0.60
+    pb_cruce=0.60
+    while i<(@k-1)
+
+      if rand()<pb_cruce
 
         #grafos_hijos=cruce(@matting_pool[rand(25)],@matting_pool[rand(25)])
         #cambio
@@ -73,27 +85,38 @@ class AG
     puts "done"
   end
 
-  def cruce (grafo1, grafo2)
+  def cruce (grafo1, grafo2) #recibe como parametros los padres a cruzar, devuelve los hijos con los nuevos parametros.
     puts "cruce"
-    point = 7-rand(7)
-    #cruce
-    cromo_1=grafo1.cromosoma[0..point].concat(grafo2.cromosoma[(point+1)..7])
-    cromo_2=grafo2.cromosoma[0..point].concat(grafo1.cromosoma[(point+1)..7])
+    point=0
+    cromo_1=[]
+    cromo_2=[]
+    pb_mut=0.1
+    if @vecindad == 1
 
+      point = 7-rand(7)
+      #cruce
+      cromo_1=grafo1.cromosoma[0..point].concat(grafo2.cromosoma[(point+1)..7])
+      cromo_2=grafo2.cromosoma[0..point].concat(grafo1.cromosoma[(point+1)..7])
+    else
+      point = 23-rand(23)
+      #cruce
+      cromo_1=grafo1.cromosoma[0..point].concat(grafo2.cromosoma[(point+1)..23])
+      cromo_2=grafo2.cromosoma[0..point].concat(grafo1.cromosoma[(point+1)..23])
+    end
     #mutacion
-    if rand()<0.1
+    if rand()<pb_mut
       cromo_1=mutacion(cromo_1)
     end
-    if rand()<0.1
+    if rand()<pb_mut
       cromo_2=mutacion(cromo_2)
     end
 
     if @clase==0 then
-      hijo1=GraphEvo.new(@num_nodos,cromo_1)
-      hijo2=GraphEvo.new(@num_nodos,cromo_2)
+      hijo1=GraphEvo.new(@num_nodos,@vecindad,cromo_1)
+      hijo2=GraphEvo.new(@num_nodos,@vecindad,cromo_2)
     else
-      hijo1=GraphRand.new(@num_nodos,cromo_1)
-      hijo2=GraphRand.new(@num_nodos,cromo_2)
+      hijo1=GraphRand.new(@num_nodos,@vecindad,cromo_1)
+      hijo2=GraphRand.new(@num_nodos,@vecindad,cromo_2)
     end
 
     puts "apitud hijo1 #{hijo1.aptitud} , aptitud hijo2 #{hijo2.aptitud}"
@@ -106,7 +129,12 @@ class AG
     puts "mutacion"
 
     puts "cromosoma normal #{cromosoma.inspect}"
-    point = rand(7)
+    point=0
+    if @vecindad==1
+      point = rand(7)
+    else
+      point=rand(23)
+    end
     #cambio de gen en el cromosoma
     if cromosoma[point]==0
       cromosoma[point]=1
@@ -122,11 +150,10 @@ class AG
   end
 
   def reemplazo
-    puts "reemplazo"    
+    puts "reemplazo"
     @hijos.each{|hijo|
       i=0
       @poblacion.each{|graph|
-      
         if hijo.aptitud<graph.aptitud
           @poblacion[i]=hijo
           puts "reemplazo #{graph.aptitud} por #{hijo.aptitud}"
@@ -134,13 +161,23 @@ class AG
         end
         i+=1
       }
+      #      while true
+      #        i=rand(@poblacion.count)
+      #        graph=@poblacion[i]
+      #        if hijo.aptitud<=graph.aptitud
+      #          @poblacion[i]=hijo
+      #          puts "reemplazo #{graph.aptitud} por #{hijo.aptitud}"
+      #          break
+      #        end
+      #      end
+
     }
     puts "done"
   end
 
   def evolucion
     #puts "aptitudes antes de evolucionar #{@aptitudes.inspect}"
-    
+
     seleccion()
     reproduccion()
     reemplazo()
